@@ -27,4 +27,4 @@ Simulation for exponential mixing according to Kukulka 2012. The rise speed is s
 
 
 # Analysis
-Execute Analysis/figures_paper.py to create all figures and tables for the main document and the supplementary material. Analysis/AnaObjects.py contains the objects and region definitions for the data analysis.
+Execute Analysis/figures_paper.py to create all figures and tables for the main document and the supplementary material (adjust read-in file names according to the simulation output file names).  Analysis/AnaObjects.py contains the objects and region definitions for the data analysis.
