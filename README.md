@@ -5,7 +5,7 @@ This repository contains all code needed for the simulation and analysis for the
 
 # OceanParcels version
 We used OceanParcels version 1.11 with slight modifications: 
-For loading a sub-set of depths, it was necessary to comment lines 173 and 174 of field.oy in the parcels folder.
+For loading a sub-set of depths, it was necessary to comment lines 173 and 174 of field.py in the parcels folder.
 
 # Simulation
 Use Simulations/AdvectParticles.py
