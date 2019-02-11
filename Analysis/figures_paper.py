@@ -1,5 +1,5 @@
 """
-Potential influence of near-surface currents on the global dispersal of marine microplastic
+Influence of near-surface currents on the global dispersal of marine microplastic
 -------------------------------------------------------------------------
 David Wichmann, Philippe Delandmeter, Erik van Sebille
 
@@ -25,7 +25,8 @@ nemo_depth =[0, 1.023907, 2.10319, 3.251309, 4.485053, 5.825238, 7.297443,
              8.932686, 10.7679, 12.84599, 15.21527, 17.92792, 21.03757, 24.59599, 
              28.64965, 33.23697, 38.3871, 44.12101, 50.45447, 57.40257, 64.9846, 
              73.2287, 82.17556, 91.88141, 102.4202, 113.8852, 126.3909]
-#Choose middle of teh cells. Note that with C-grid interpolation, the horizontal velocities are the same within each cell
+
+#Choose middle of the cells. Note that with C-grid interpolation, the horizontal velocities are the same within each cell
 nemo_depth = [int((nemo_depth[i+1]+nemo_depth[i])/2) for i in range(len(nemo_depth)-1)]
 
 models_all = ['Layer0', 'Layer2', 'Layer4', 'Layer7', 'Layer10','Layer13',
@@ -77,13 +78,13 @@ FIG1_surface_distribution()
 
 def FIG2_distributions_different_models():
     
-    folders = ['Layer7', 'Layer16', 'Layer19', 'UniMix']
+    folders = ['Layer10', 'Layer16', 'Layer19', 'UniMix']
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]
-    labels = ['a) z = ' + str(nemo_depth[7]) + ' m', 
+    labels = ['a) z = ' + str(nemo_depth[10]) + ' m', 
     'b) z = ' + str(nemo_depth[16]) + ' m', 
     'c) z = ' + str(nemo_depth[19]) + ' m', 
     'd) Uniform'] #figure titles    
-    filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
+    filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer10_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer19_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos']
     
     fig = plt.figure(figsize = (14,8)) 
@@ -537,14 +538,14 @@ S2_plot_regions()
 def S3_distributions_different_models():   
 
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer2_pos','SubSurf_y2000_m1_d5_simdays3650_layer4_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer10_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer13_pos',
+              'SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer13_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos', 
               'SubSurf_y2000_m1_d5_simdays3650_layer25_pos','Kukulka_y2000_m1_d5_simdays3650_layer0_pos']
-    folders = ['Layer2', 'Layer4', 'Layer10','Layer13','Layer22', 'Layer23', 'Layer25','KukMix']    
+    folders = ['Layer2', 'Layer4', 'Layer7','Layer13','Layer22', 'Layer23', 'Layer25','KukMix']    
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]           
     labels = ['a) z = ' + str(nemo_depth[2]) + ' m', 
     'b) z = ' + str(nemo_depth[4]) + ' m', 
-    'c) z = ' + str(nemo_depth[10]) + ' m', 
+    'c) z = ' + str(nemo_depth[7]) + ' m', 
     'd) z = ' + str(nemo_depth[13]) + ' m', 
     'e) z = ' + str(nemo_depth[22]) + ' m', 
     'f) z = ' + str(nemo_depth[23]) + ' m', 
