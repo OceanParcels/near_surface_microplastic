@@ -1,4 +1,4 @@
-# Code for "Potential influence of near-surface currents on the global dispersal of marine microplastic"
+# Code for "Influence of near-surface currents on the global dispersal of marine microplastic"
 Authors: David Wichmann, Philippe Delandmeter, Erik van Sebille 
 
 This repository contains all code needed for the simulation and analysis for the paper. For questions, please contact d.wichmann@uu.nl.
