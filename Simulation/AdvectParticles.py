@@ -1,5 +1,5 @@
 """
-Potential influence of near-surface currents on the global dispersal of marine microplastic
+Influence of near-surface currents on the global dispersal of marine microplastic
 -------------------------------------------------------------------------
 David Wichmann, Philippe Delandmeter, Erik van Sebille
 
