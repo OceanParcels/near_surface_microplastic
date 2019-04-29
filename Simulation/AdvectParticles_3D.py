@@ -22,6 +22,30 @@ datadir = '/projects/0/topios/hydrodynamic_data/NEMO-MEDUSA/ORCA0083-N006/' #Dir
 outputdir = '/scratch-shared/wichmann/SubSurfaceOutput/' #Directory for output files
 griddir = '/home/wichmann/SubsurfaceTransport/ParticleGrid/Global02grid/' #Directory for initial particle distribution
 
+def get_nemo():
+    ufiles = sorted(glob(datadir+'means/ORCA0083-N06_200?????d05U.nc'))
+    vfiles = sorted(glob(datadir+'means/ORCA0083-N06_200?????d05V.nc'))
+    mesh_mask = datadir + 'domain/coordinates.nc'
+
+    wfiles = sorted(glob(datadir+'means/ORCA0083-N06_200?????d05W.nc'))
+    filenames = {'U': {'lon': mesh_mask, 'lat': mesh_mask, 'depth': wfiles[0], 'data': ufiles},
+                 'V': {'lon': mesh_mask, 'lat': mesh_mask, 'depth': wfiles[0], 'data': vfiles},
+                 'W': {'lon': mesh_mask, 'lat': mesh_mask, 'depth': wfiles[0], 'data': wfiles}}
+    variables = {'U': 'uo',
+                 'V': 'vo',
+                 'W': 'wo'}
+    dimensions = {'U': {'lon': 'glamf', 'lat': 'gphif', 'depth': 'depthw', 'time': 'time_counter'},
+                  'V': {'lon': 'glamf', 'lat': 'gphif', 'depth': 'depthw', 'time': 'time_counter'},
+                  'W': {'lon': 'glamf', 'lat': 'gphif', 'depth': 'depthw', 'time': 'time_counter'}}
+
+    fieldset = FieldSet.from_nemo(filenames, variables, dimensions)
+    
+    def compute(fieldset):
+        fieldset.W.data[:, 0, :, :] = 0.
+
+    fieldset.compute_on_defer = compute
+    return fieldset
+
 def DeleteParticle(particle, fieldset, time, dt):
     """Kernel for deleting particles if they are out of bounds."""
     particle.delete()
@@ -61,25 +85,8 @@ def p_advect(ptype=JITParticle, outname='noname', pos=0, y=2001, m=1, d=1, simda
     depths = [1.5] * len(lons)
     times = [datetime(y, m, d)]*len(lons)
     print 'Number of particles: ', len(lons)
-
-    ufiles = sorted(glob(datadir+'means/ORCA0083-N06_200?????d05U.nc'))
-    vfiles = sorted(glob(datadir+'means/ORCA0083-N06_200?????d05V.nc'))
-    wfiles =  sorted(glob(datadir+'means/ORCA0083-N06_200?????d05W.nc'))
-    mesh_mask = datadir + 'domain/coordinates.nc'
-
-    filenames = {'U': {'lon': mesh_mask, 'lat': mesh_mask, 'depth': wfiles[0], 'data': ufiles},
-             'V': {'lon': mesh_mask, 'lat': mesh_mask, 'depth': wfiles[0], 'data': vfiles},
-             'W': {'lon': mesh_mask, 'lat': mesh_mask, 'depth': wfiles[0], 'data': wfiles}}
-
-    variables = {'U': 'uo',
-             'V': 'vo',
-             'W': 'wo'}
     
-    dimensions = {'U': {'lon': 'glamf', 'lat': 'gphif', 'depth': 'depthw', 'time': 'time_counter'},
-              'V': {'lon': 'glamf', 'lat': 'gphif', 'depth': 'depthw', 'time': 'time_counter'},
-              'W': {'lon': 'glamf', 'lat': 'gphif', 'depth': 'depthw', 'time': 'time_counter'}}
-
-    fieldset = FieldSet.from_nemo(filenames, variables, dimensions)
+    fieldset = get_nemo_fieldset()
 
     outfile = outputdir + outname + '3D_y'+ str(y) + '_m' + str(m) + '_d' + str(d)  + '_simdays' + str(simdays) + '_pos' + str(pos)
 
