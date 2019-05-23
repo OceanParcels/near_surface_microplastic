@@ -1,5 +1,5 @@
 """
-Influence of near-surface currents on the global dispersal of marine microplastic
+Potential influence of near-surface currents on the global dispersal of marine microplastic
 -------------------------------------------------------------------------
 David Wichmann, Philippe Delandmeter, Erik van Sebille
 
@@ -15,34 +15,39 @@ from AnaObjects import ParticleData, oceanvector, regions
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import matplotlib.colors as colors
+from netCDF4 import Dataset
 import matplotlib.gridspec as gridspec
 
 datadir = '/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' #Data directory #directory of the data.
-outdir_paper = './paper_figures/' #directory for saving figures for the paper
-outdir_supplementary = './supplementary_material/' #directory for saving figures for the paper
+outdir_paper = '/Users/wichmann/P1_Subsurface/SubsurfaceTransport/paper/paper_figures/' #directory for saving figures for the paper
+outdir_supplementary = '/Users/wichmann/P1_Subsurface/SubsurfaceTransport/paper/supplementary_material/' #directory for saving figures for the paper
+
 
 nemo_depth =[0, 1.023907, 2.10319, 3.251309, 4.485053, 5.825238, 7.297443, 
              8.932686, 10.7679, 12.84599, 15.21527, 17.92792, 21.03757, 24.59599, 
              28.64965, 33.23697, 38.3871, 44.12101, 50.45447, 57.40257, 64.9846, 
              73.2287, 82.17556, 91.88141, 102.4202, 113.8852, 126.3909]
 
-#Choose middle of the cells. Note that with C-grid interpolation, the horizontal velocities are the same within each cell
+#Choose middle of teh cells. Note that with C-grid interpolation, the horizontal velocities are the same within each cell
 nemo_depth = [int((nemo_depth[i+1]+nemo_depth[i])/2) for i in range(len(nemo_depth)-1)]
 
 models_all = ['Layer0', 'Layer2', 'Layer4', 'Layer7', 'Layer10','Layer13',
           'Layer16', 'Layer19', 'Layer22', 'Layer23', 'Layer25', 'Uniform', 
-          'Kukulka']
+          'Kukulka', 'Sim3D']
+
 filenames_all = ['SubSurf_y2000_m1_d5_simdays3650_layer0_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer2_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer4_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer7_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer10_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer13_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer16_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer19_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos',
-              'Kukulka_y2000_m1_d5_simdays3650_layer0_pos']
-folders_all = ['Layer0', 'Layer2', 'Layer4', 'Layer7', 'Layer10','Layer13',
+              'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
+
+subfolders_all = ['Layer0', 'Layer2', 'Layer4', 'Layer7', 'Layer10','Layer13',
            'Layer16', 'Layer19', 'Layer22', 'Layer23', 'Layer25', 'UniMix',
-           'KukMix']
-folders_all = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders_all]
+           'KukMix', 'Sim3D']
+
+folders_all = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in subfolders_all]
 
 
 """
@@ -72,34 +77,42 @@ def FIG1_surface_distribution():
     cbar=plt.colorbar(orientation='vertical',shrink=0.5)
     cbar.ax.tick_params(labelsize=10, width=0.05)
     cbar.set_label('Particles per bin', size=10)
-    fig.savefig(outdir_paper + 'surface_distribution.pdf', dpi=900, bbox_inches='tight')
+    fig.savefig(outdir_paper + 'F1_surface_distribution.pdf', dpi=900, bbox_inches='tight')
 
-FIG1_surface_distribution()
+#FIG1_surface_distribution()
 
 def FIG2_distributions_different_models():
     
-    folders = ['Layer10', 'Layer16', 'Layer19', 'UniMix']
-    folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]
-    labels = ['a) z = ' + str(nemo_depth[10]) + ' m', 
-    'b) z = ' + str(nemo_depth[16]) + ' m', 
-    'c) z = ' + str(nemo_depth[19]) + ' m', 
-    'd) Uniform'] #figure titles    
-    filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer10_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer19_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos']
+    subfolders = ['Layer7', 'Layer16', 'Layer19', 'KukMix', 'UniMix', 'Sim3D']
+    folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in subfolders]
+    labels = ['a) z = ' + str(nemo_depth[7]) + ' m', 
+    'b) z = ' + str(nemo_depth[16]) + ' m',
+    'c) z = ' + str(nemo_depth[19]) + ' m',
+    'd) Kukulka mixing',
+    'd) Uniform',
+    'f) 3D simulation'] #figure titles
+    filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
+              'SubSurf_y2000_m1_d5_simdays3650_layer19_pos', 'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 
+              'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
     
-    fig = plt.figure(figsize = (14,8)) 
-    gs1 = gridspec.GridSpec(2, 2)
-    gs1.update(wspace=0.01, hspace=0.0)
+    fig = plt.figure(figsize = (14,11)) 
+    gs1 = gridspec.GridSpec(3, 2)
+    gs1.update(wspace=0.06, hspace=0.0)
 
     for i in range(len(folders)):
 
         #load particle data and get distribution
         filename = filenames[i]
-        pdata=ParticleData.from_nc(folders[i] + '/', filename, tload=[0,-1], Ngrids=40)
-        d_full=pdata.get_distribution(t=-1, ddeg=2.).flatten()
-        d=oceanvector(d_full, ddeg = 2.)        
-        lon_bins_2d,lat_bins_2d = np.meshgrid(d.Lons_edges,d.Lats_edges)
+        
+        if subfolders[i]=='Sim3D':
+            pdata=ParticleData.from_nc(folders[i] + '/', filename, tload=[0,121], Ngrids=12)
+        else:
+            pdata=ParticleData.from_nc(folders[i] + '/', filename, tload=[0,-1], Ngrids=40)
 
+        d_full=pdata.get_distribution(t=-1, ddeg=2.).flatten()
+        d=oceanvector(d_full, ddeg = 2.)
+        lon_bins_2d,lat_bins_2d = np.meshgrid(d.Lons_edges,d.Lats_edges)
+        
         #create subplot
         plt.subplot(gs1[i])
         m = Basemap(projection='robin',lon_0=180,resolution='l')
@@ -108,30 +121,38 @@ def FIG2_distributions_different_models():
         m.drawcoastlines()
         m.fillcontinents(color='dimgrey')
         xs, ys = m(lon_bins_2d, lat_bins_2d)         
-        plt.pcolormesh(xs, ys, d.V2d,cmap='plasma', norm=colors.LogNorm(), rasterized=True)
-        cbar=plt.colorbar(orientation='vertical',shrink=0.5)
-        cbar.ax.tick_params(labelsize=7, width=0.03)
+        p=plt.pcolormesh(xs, ys, d.V2d,cmap='plasma', norm=colors.LogNorm(), vmin=1, vmax=10000, rasterized=True)
         plt.title(labels[i], size=10, y=1.)
-    
-    fig.savefig(outdir_paper + 'distributions_different_models.pdf', dpi=900, bbox_inches='tight')
 
-FIG2_distributions_different_models()
+
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.85, 0.35, 0.015, 0.4])
+    cbar=fig.colorbar(p, cax=cbar_ax)
+    cbar.ax.tick_params(labelsize=11)
+    cbar.set_label('# particles per bin',size=12)
+        
+    fig.savefig(outdir_paper + 'F2_distributions_different_models.pdf', dpi=900, bbox_inches='tight')
+
+#FIG2_distributions_different_models()
 
 def FIG3_scatter_final_basin():
 
-    folders = ['Layer0', 'Layer16', 'Layer25', 'UniMix']
-    folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]
+    subfolders = ['Layer0', 'Layer16', 'Layer25', 'KukMix', 'UniMix', 'Sim3D']
+    folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in subfolders]
     labels = ['a) z = ' + str(nemo_depth[0]) + ' m', 
     'b) z = ' + str(nemo_depth[16]) + ' m', 
     'c) z = ' + str(nemo_depth[25]) + ' m', 
-    'd) Uniform'] #figure titles    
+    'd) Kukulka mixing',
+    'e) Uniform', 
+    'f) 3D simulation'] #figure titles    
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer0_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos']
+              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 
+              'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
 
     #for the figure
-    fig = plt.figure(figsize = (14,8)) 
-    gs1 = gridspec.GridSpec(2, 2)
-    gs1.update(wspace=0.1, hspace=0.0)
+    fig = plt.figure(figsize = (14,11)) 
+    gs1 = gridspec.GridSpec(3, 2)
+    gs1.update(wspace=0.06, hspace=0.0)
     
     #get region names and constrain to the subtropical basins
     _, region_names = regions(2.)
@@ -142,7 +163,12 @@ def FIG3_scatter_final_basin():
         
         #load particle data        
         filename = filenames[j]
-        pdata=ParticleData.from_nc(folders[j] + '/', filename, tload=[0,-1], Ngrids=40)
+        
+        if subfolders[j]=='Sim3D':
+            pdata=ParticleData.from_nc(folders[j] + '/', filename, tload=[0,121], Ngrids=12)
+        else:
+            pdata=ParticleData.from_nc(folders[j] + '/', filename, tload=[0,-1], Ngrids=40)
+
         pdata.remove_nans()
         region_label=pdata.set_region_labels(2., -1)
         
@@ -173,26 +199,30 @@ def FIG3_scatter_final_basin():
     tick_locs = 1+0.4 * np.array([1,3,5,7,9])
     cbar.set_ticks(tick_locs)
     cbar.set_ticklabels(region_names)
-    fig.savefig(outdir_paper + 'transport_basins_scatter.pdf', dpi=900, bbox_inches='tight')
+    fig.savefig(outdir_paper + 'F3_transport_basins_scatter.pdf', dpi=900, bbox_inches='tight')
 
-FIG3_scatter_final_basin()
+#FIG3_scatter_final_basin()
+
 
 def FIG4_scatter_final_poles():
 
-    folders = ['Layer0', 'Layer16', 'Layer25', 'UniMix']
-    folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]
+    subfolders = ['Layer0', 'Layer16', 'Layer25', 'KukMix', 'UniMix', 'Sim3D']
+    folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in subfolders]
     labels = ['a) z = ' + str(nemo_depth[0]) + ' m', 
     'b) z = ' + str(nemo_depth[16]) + ' m', 
     'c) z = ' + str(nemo_depth[25]) + ' m', 
-    'd) Uniform'] #figure titles    
+    'd) Kukulka mixing',
+    'e) Uniform', 
+    'f) 3D simulation'] #figure titles    
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer0_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos']
+              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 
+              'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
 
     #for the figure
-    fig = plt.figure(figsize = (14,8)) 
-    gs1 = gridspec.GridSpec(2, 2)
-    gs1.update(wspace=0.1, hspace=0.0)
-
+    fig = plt.figure(figsize = (14,11)) 
+    gs1 = gridspec.GridSpec(3, 2)
+    gs1.update(wspace=0.06, hspace=0.0)
+    
     #binning for the regions defining functions. this does not affect the result, as the region boundaries are a multiple of 2
     ddeg=2.
     
@@ -205,7 +235,12 @@ def FIG4_scatter_final_poles():
         
         #load particle data        
         filename = filenames[j]
-        pdata=ParticleData.from_nc(folders[j] + '/', filename, tload=[0,-1], Ngrids=40)
+
+        if subfolders[j]=='Sim3D':
+            pdata=ParticleData.from_nc(folders[j] + '/', filename, tload=[0,121], Ngrids=12)
+        else:
+            pdata=ParticleData.from_nc(folders[j] + '/', filename, tload=[0,-1], Ngrids=40)
+            
         pdata.remove_nans()
         region_label=pdata.set_region_labels(ddeg, -1)
         
@@ -238,9 +273,9 @@ def FIG4_scatter_final_poles():
     cbar.set_ticklabels(region_names)
 
     #save figure
-    fig.savefig(outdir_paper + 'transport_poles_scatter.pdf', dpi=900, bbox_inches='tight')
+    fig.savefig(outdir_paper + 'F4_transport_poles_scatter.pdf', dpi=900, bbox_inches='tight')
 
-FIG4_scatter_final_poles()
+#FIG4_scatter_final_poles()
 
 
 def FIG5_RegionalTransport():
@@ -254,8 +289,13 @@ def FIG5_RegionalTransport():
         
         ddeg = 2. #Choice of binning, required for the region labels. ddeg=2 has no influence here on the result as we are perfectly on the region boundaries
         
-        for j in range(len(folders_all)):            
-            pdata=ParticleData.from_nc(folders_all[j] + '/', filenames_all[j], tload=[0,-1], Ngrids=40)
+        for j in range(len(folders_all)):    
+            
+            if subfolders_all[j]=='Sim3D':
+                pdata=ParticleData.from_nc(folders_all[j] + '/', filenames_all[j], tload=[0,121], Ngrids=12)
+            else:
+                pdata=ParticleData.from_nc(folders_all[j] + '/', filenames_all[j], tload=[0,-1], Ngrids=40)
+
             pdata.remove_nans() #Remove some Nans
             
             #Give the particles labels according to the basin they are in at different times
@@ -271,12 +311,14 @@ def FIG5_RegionalTransport():
         
         np.save(outdir_paper + 'n_matrix_solat_'+str(so_lat) + '_na_lat_'+str(na_lat), n_matrix)
     
-    for so_lat in [-56, -60, -62]:  
-        create_transport_matrix(so_lat=so_lat)
-
-    for na_lat in [60, 70]:  
-        create_transport_matrix(na_lat=na_lat)
     
+#    for so_lat in [-56, -60, -62]:  
+#        create_transport_matrix(so_lat=so_lat)
+
+#    for na_lat in [60, 70]:  
+#        create_transport_matrix(na_lat=na_lat)
+
+        
     
     def polward_transport():
         n_matrix = np.load(outdir_paper + 'n_matrix_solat_-60_na_lat_65.npy').tolist()
@@ -291,6 +333,7 @@ def FIG5_RegionalTransport():
         depths = [nemo_depth[d] for d in layers]
         depths.append(140)
         depths.append(160)
+        depths.append(180)
         
         f_to_southern_ocean=[]
         f_to_southern_ocean_56=[]
@@ -377,23 +420,23 @@ def FIG5_RegionalTransport():
         plt.title('a) Transport to Southern Ocean', size=12, y=1.01)
         plt.ylabel('$F_{basin,southern}$ [%]', size=12)
                 
-        plt.plot(depths[0:-2], f_to_southern_ocean[:,5][0:-2], label = region_names[4], marker='o', linestyle=':', c='b', markersize=5)
-        plt.fill_between(depths[0:-2], f_to_southern_ocean_62[:,5][0:-2], f_to_southern_ocean_56[:,5][0:-2] , color='b', alpha=0.2)
-        yerr1 = f_to_southern_ocean[:,5][-2:]-f_to_southern_ocean_62[:,5][-2:]
-        yerr2 = f_to_southern_ocean_56[:,5][-2:]-f_to_southern_ocean[:,5][-2:]        
-        plt.errorbar(depths[-2:], f_to_southern_ocean[:,5][-2:], yerr=[yerr1,yerr2], c='b', fmt='o', capsize=5, markersize=5)
+        plt.plot(depths[0:-3], f_to_southern_ocean[0:-3,5], label = region_names[4], marker='o', linestyle=':', c='b', markersize=5)
+        plt.fill_between(depths[0:-3], f_to_southern_ocean_62[:,5][0:-3], f_to_southern_ocean_56[:,5][0:-3] , color='b', alpha=0.2)
+        yerr1 = f_to_southern_ocean[:,5][-3:]-f_to_southern_ocean_62[:,5][-3:]
+        yerr2 = f_to_southern_ocean_56[:,5][-3:]-f_to_southern_ocean[:,5][-3:]        
+        plt.errorbar(depths[-3:], f_to_southern_ocean[:,5][-3:], yerr=[yerr1,yerr2], c='b', fmt='o', capsize=5, markersize=5)
         
-        plt.plot(depths[0:-2], f_to_southern_ocean[:,4][0:-2], label = region_names[3], marker='o', linestyle=':', c='g', markersize=5)
-        plt.fill_between(depths[0:-2], f_to_southern_ocean_62[:,4][0:-2], f_to_southern_ocean_56[:,4][0:-2] , color='g', alpha=0.2)                
-        yerr1 = f_to_southern_ocean[:,4][-2:]-f_to_southern_ocean_62[:,4][-2:]
-        yerr2 = f_to_southern_ocean_56[:,4][-2:]-f_to_southern_ocean[:,4][-2:]        
-        plt.errorbar(depths[-2:], f_to_southern_ocean[:,4][-2:], yerr=[yerr1,yerr2], c='g', fmt='o', capsize=5, markersize=5)
+        plt.plot(depths[0:-3], f_to_southern_ocean[:,4][0:-3], label = region_names[3], marker='o', linestyle=':', c='g', markersize=5)
+        plt.fill_between(depths[0:-3], f_to_southern_ocean_62[:,4][0:-3], f_to_southern_ocean_56[:,4][0:-3] , color='g', alpha=0.2)                
+        yerr1 = f_to_southern_ocean[:,4][-3:]-f_to_southern_ocean_62[:,4][-3:]
+        yerr2 = f_to_southern_ocean_56[:,4][-3:]-f_to_southern_ocean[:,4][-3:]        
+        plt.errorbar(depths[-3:], f_to_southern_ocean[:,4][-3:], yerr=[yerr1,yerr2], c='g', fmt='o', capsize=5, markersize=5)
 
-        plt.plot(depths[0:-2], f_to_southern_ocean[:,3][0:-2], label = region_names[2], marker='o', linestyle=':', c='r', markersize=5)
-        plt.fill_between(depths[0:-2], f_to_southern_ocean_62[:,3][0:-2], f_to_southern_ocean_56[:,3][0:-2] , color='r', alpha=0.2)               
-        yerr1 = f_to_southern_ocean[:,3][-2:]-f_to_southern_ocean_62[:,3][-2:]
-        yerr2 = f_to_southern_ocean_56[:,3][-2:]-f_to_southern_ocean[:,3][-2:]        
-        plt.errorbar(depths[-2:], f_to_southern_ocean[:,3][-2:], yerr=[yerr1,yerr2], c='r', fmt='o', capsize=5, markersize=5)
+        plt.plot(depths[0:-3], f_to_southern_ocean[:,3][0:-3], label = region_names[2], marker='o', linestyle=':', c='r', markersize=5)
+        plt.fill_between(depths[0:-3], f_to_southern_ocean_62[:,3][0:-3], f_to_southern_ocean_56[:,3][0:-3] , color='r', alpha=0.2)               
+        yerr1 = f_to_southern_ocean[:,3][-3:]-f_to_southern_ocean_62[:,3][-3:]
+        yerr2 = f_to_southern_ocean_56[:,3][-3:]-f_to_southern_ocean[:,3][-3:]        
+        plt.errorbar(depths[-3:], f_to_southern_ocean[:,3][-3:], yerr=[yerr1,yerr2], c='r', fmt='o', capsize=5, markersize=5)
 
         plt.grid(linestyle='--', linewidth=1)
         leg = plt.legend(prop={'size': 10})
@@ -401,65 +444,66 @@ def FIG5_RegionalTransport():
         plt.tick_params(axis='both', which='major', labelsize=10)
         plt.yticks(np.arange(0,10,2))        
         xlabels = np.arange(0,140,20)
-        xlabels = np.append(xlabels, ['U','K'])
-        plt.xticks(np.arange(0,180,20), xlabels)
+        xlabels = np.append(xlabels, ['U','K', '3D'])
+        plt.xticks(np.arange(0,200,20), xlabels)
         
         #F_SOSO
         plt.subplot(gs1[1])
         plt.title('b) Transport within Southern Ocean', size=12, y=1.01)
         plt.ylabel(r'$F_{southern,southern}$ [%]', size=12)
-        plt.plot(depths[0:-2], f_to_southern_ocean[:,7][0:-2], marker='o', linestyle=':', c='k', markersize=5)
-        plt.fill_between(depths[0:-2], f_to_southern_ocean_62[:,7][0:-2], f_to_southern_ocean_56[:,7][0:-2] , color='k', alpha=0.2)
-        yerr1 = f_to_southern_ocean[:,7][-2:]-f_to_southern_ocean_62[:,7][-2:]
-        yerr2 = f_to_southern_ocean_56[:,7][-2:]-f_to_southern_ocean[:,7][-2:]        
-        plt.errorbar(depths[-2:], f_to_southern_ocean[:,7][-2:], yerr=[yerr1,yerr2], c='k', fmt='o', capsize=5, markersize=5)
+        plt.plot(depths[0:-3], f_to_southern_ocean[:,7][0:-3], marker='o', linestyle=':', c='k', markersize=5)
+        plt.fill_between(depths[0:-3], f_to_southern_ocean_62[:,7][0:-3], f_to_southern_ocean_56[:,7][0:-3] , color='k', alpha=0.2)
+        yerr1 = f_to_southern_ocean[:,7][-3:]-f_to_southern_ocean_62[:,7][-3:]
+        yerr2 = f_to_southern_ocean_56[:,7][-3:]-f_to_southern_ocean[:,7][-3:]        
+        plt.errorbar(depths[-3:], f_to_southern_ocean[:,7][-3:], yerr=[yerr1,yerr2], c='k', fmt='o', capsize=5, markersize=5)
         plt.grid(linestyle='--', linewidth=1)
         plt.tick_params(axis='both', which='major', labelsize=10)
         plt.yticks(np.arange(0,90,10))
-        plt.xticks(np.arange(0,180,20), xlabels)
+        plt.xticks(np.arange(0,200,20), xlabels)
 
         #Arctic F
         plt.subplot(gs1[2])
         plt.title(r'c) Transport to Arctic', size=12, y=1.01)        
         plt.ylabel(r'$F_{basin,arctic}$ [%]', size=12)
-        plt.plot(depths[0:-2], f_to_arctic[:,2][0:-2], label = region_names[1], marker='o', linestyle=':', c='g', markersize=5)
-        plt.fill_between(depths[0:-2], f_to_arctic_60[:,2][0:-2], f_to_arctic_70[:,2][0:-2] , color='g', alpha=0.2)        
-        yerr1 = f_to_arctic_60[:,2][-2:]-f_to_arctic[:,2][-2:]
-        yerr2 = f_to_arctic[:,2][-2:]-f_to_arctic_70[:,2][-2:]        
-        plt.errorbar(depths[-2:], f_to_arctic[:,2][-2:], yerr=[yerr1,yerr2], c='g', fmt='o', capsize=5, markersize=5)
-        plt.plot(depths[0:-2], f_to_arctic[:,1][0:-2], label = region_names[0], marker='o', linestyle=':', c='r', markersize=5)
-        plt.fill_between(depths[0:-2], f_to_arctic_60[:,1][0:-2], f_to_arctic_70[:,1][0:-2] , color='r', alpha=0.2)
-        yerr1 = f_to_arctic_60[:,1][-2:]-f_to_arctic[:,1][-2:]
-        yerr2 = f_to_arctic[:,1][-2:]-f_to_arctic_70[:,1][-2:]
-        plt.errorbar(depths[-2:], f_to_arctic[:,1][-2:], yerr=[yerr1,yerr2], c='r', fmt='o', capsize=5, markersize=5)
+        plt.plot(depths[0:-3], f_to_arctic[:,2][0:-3], label = region_names[1], marker='o', linestyle=':', c='g', markersize=5)
+        plt.fill_between(depths[0:-3], f_to_arctic_60[:,2][0:-3], f_to_arctic_70[:,2][0:-3] , color='g', alpha=0.2)        
+        yerr1 = f_to_arctic_60[:,2][-3:]-f_to_arctic[:,2][-3:]
+        yerr2 = f_to_arctic[:,2][-3:]-f_to_arctic_70[:,2][-3:]        
+        plt.errorbar(depths[-3:], f_to_arctic[:,2][-3:], yerr=[yerr1,yerr2], c='g', fmt='o', capsize=5, markersize=5)
+        plt.plot(depths[0:-3], f_to_arctic[:,1][0:-3], label = region_names[0], marker='o', linestyle=':', c='r', markersize=5)
+        plt.fill_between(depths[0:-3], f_to_arctic_60[:,1][0:-3], f_to_arctic_70[:,1][0:-3] , color='r', alpha=0.2)
+        yerr1 = f_to_arctic_60[:,1][-3:]-f_to_arctic[:,1][-3:]
+        yerr2 = f_to_arctic[:,1][-3:]-f_to_arctic_70[:,1][-3:]
+        plt.errorbar(depths[-3:], f_to_arctic[:,1][-3:], yerr=[yerr1,yerr2], c='r', fmt='o', capsize=5, markersize=5)
         plt.grid(linestyle='--', linewidth=1)
         leg = plt.legend(prop={'size': 10})
         leg.set_title('Basin of origin', prop = {'size':12})
         plt.tick_params(axis='both', which='major', labelsize=10)
         plt.yticks(np.arange(0,16,2))
-        plt.xticks(np.arange(0,180,20), xlabels)
+        plt.xticks(np.arange(0,200,20), xlabels)
         plt.xlabel('depth [m]', size=10)
 
         #F_AA
         plt.subplot(gs1[3])
         plt.title('d) Transport within Arctic', size=12, y=1.01)
         plt.ylabel(r' $F_{arctic,arctic}$ [%]', size=12)
-        plt.plot(depths[0:-2], f_to_arctic[:,6][0:-2], label = region_names[5], marker='o', linestyle=':', c='k', markersize=5)
-        plt.fill_between(depths[0:-2], f_to_arctic_60[:,6][0:-2], f_to_arctic_70[:,6][0:-2] , color='k', alpha=0.2)
-        yerr1 = f_to_arctic_60[:,6][-2:]-f_to_arctic[:,6][-2:]
-        yerr2 = f_to_arctic[:,6][-2:]-f_to_arctic_70[:,6][-2:]
-        plt.errorbar(depths[-2:], f_to_arctic[:,6][-2:], yerr=[yerr1,yerr2], c='k', fmt='o', capsize=5, markersize=5)        
+        plt.plot(depths[0:-3], f_to_arctic[:,6][0:-3], label = region_names[5], marker='o', linestyle=':', c='k', markersize=5)
+        plt.fill_between(depths[0:-3], f_to_arctic_60[:,6][0:-3], f_to_arctic_70[:,6][0:-3] , color='k', alpha=0.2)
+        yerr1 = f_to_arctic_60[:,6][-3:]-f_to_arctic[:,6][-3:]
+        yerr2 = f_to_arctic[:,6][-3:]-f_to_arctic_70[:,6][-3:]
+        plt.errorbar(depths[-3:], f_to_arctic[:,6][-3:], yerr=[yerr1,yerr2], c='k', fmt='o', capsize=5, markersize=5)        
         plt.grid(linestyle='--', linewidth=1)
         plt.tick_params(axis='both', which='major', labelsize=10)
         plt.yticks(np.arange(40,90,10))
-        plt.xticks(np.arange(0,180,20), xlabels)
+        plt.xticks(np.arange(0,200,20), xlabels)
         plt.xlabel('depth [m]', size=10)
 
-        plt.savefig(outdir_paper + 'regional_transport_to_poles.pdf', dpi=900, bbox_inches='tight')
+        plt.savefig(outdir_paper + 'F5_regional_transport_to_poles.pdf', dpi=900, bbox_inches='tight')
         
     polward_transport()
 
-FIG5_RegionalTransport()
+#FIG5_RegionalTransport()
+
 
 
 """
@@ -504,9 +548,9 @@ def S1_surface_distribution_different_times():
         cbar.ax.tick_params(labelsize=7, width=0.03)
         plt.title('Year ' + str(int(round(tload[i]*5/365.,0))), size=10)
     
-    fig.savefig(outdir_supplementary + 'distribution_surface_in_time.pdf', dpi=900, bbox_inches='tight')
+    fig.savefig(outdir_paper + 'S1_distribution_surface_in_time.pdf', dpi=900, bbox_inches='tight')
     
-S1_surface_distribution_different_times()
+#S1_surface_distribution_different_times()
     
 def S2_plot_regions():
 
@@ -530,27 +574,27 @@ def S2_plot_regions():
     cbar.set_ticks(tick_locs)
     cbar.set_ticklabels(region_names)
     
-    fig.savefig(outdir_supplementary + 'regions.pdf', dpi=900, bbox_inches='tight')
+    fig.savefig(outdir_paper + 'S2_regions.pdf', dpi=900, bbox_inches='tight')
 
-S2_plot_regions()
+#S2_plot_regions()
 
-
+    
+    
 def S3_distributions_different_models():   
 
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer2_pos','SubSurf_y2000_m1_d5_simdays3650_layer4_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer13_pos',
+              'SubSurf_y2000_m1_d5_simdays3650_layer10_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer13_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos', 
-              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos','Kukulka_y2000_m1_d5_simdays3650_layer0_pos']
-    folders = ['Layer2', 'Layer4', 'Layer7','Layer13','Layer22', 'Layer23', 'Layer25','KukMix']    
+              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos']
+    folders = ['Layer2', 'Layer4', 'Layer10','Layer13','Layer22', 'Layer23', 'Layer25']    
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]           
     labels = ['a) z = ' + str(nemo_depth[2]) + ' m', 
     'b) z = ' + str(nemo_depth[4]) + ' m', 
-    'c) z = ' + str(nemo_depth[7]) + ' m', 
+    'c) z = ' + str(nemo_depth[10]) + ' m', 
     'd) z = ' + str(nemo_depth[13]) + ' m', 
     'e) z = ' + str(nemo_depth[22]) + ' m', 
     'f) z = ' + str(nemo_depth[23]) + ' m', 
-    'g) z = ' + str(nemo_depth[25]) + ' m', 
-    'h) Kukulka mixing'] #figure titles    
+    'g) z = ' + str(nemo_depth[25]) + ' m'] #figure titles    
     
     #for the figure
     fig = plt.figure(figsize = (14,14)) 
@@ -583,9 +627,9 @@ def S3_distributions_different_models():
         cbar.ax.tick_params(labelsize=7, width=0.03)
         plt.title(labels[i], size=10, y=1.)
     
-        fig.savefig(outdir_supplementary + 'distributions_other_scenarios.pdf', dpi=900, bbox_inches='tight')
+        fig.savefig(outdir_paper + 'S3_distributions_other_scenarios.pdf', dpi=900, bbox_inches='tight')
 
-S3_distributions_different_models()
+#S3_distributions_different_models()
 
         
 def S4_basintransport_other():   
@@ -593,9 +637,8 @@ def S4_basintransport_other():
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer2_pos','SubSurf_y2000_m1_d5_simdays3650_layer4_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer10_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer13_pos','SubSurf_y2000_m1_d5_simdays3650_layer19_pos', 
-              'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos',
-              'Kukulka_y2000_m1_d5_simdays3650_layer0_pos']
-    folders = ['Layer2', 'Layer4' , 'Layer7', 'Layer10','Layer13','Layer19', 'Layer22', 'Layer23','KukMix']
+              'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos']
+    folders = ['Layer2', 'Layer4' , 'Layer7', 'Layer10','Layer13','Layer19', 'Layer22', 'Layer23']
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]
     labels = ['a) z = ' + str(nemo_depth[2]) + ' m', 
     'b) z = ' + str(nemo_depth[4]) + ' m', 
@@ -604,8 +647,7 @@ def S4_basintransport_other():
     'e) z = ' + str(nemo_depth[13]) + ' m', 
     'f) z = ' + str(nemo_depth[19]) + ' m', 
     'g) z = ' + str(nemo_depth[22]) + ' m', 
-    'h) z = ' + str(nemo_depth[23]) + ' m', 
-    'i) Kukulka mixing'] #figure titles    
+    'h) z = ' + str(nemo_depth[23]) + ' m'] #figure titles    
     
     #for the figure
     fig = plt.figure(figsize = (14,18)) 
@@ -654,10 +696,10 @@ def S4_basintransport_other():
     cbar.set_ticklabels(region_names)
 
     #save figure
-    fig.savefig(outdir_supplementary + 'transport_basins_scatter_other.pdf', dpi=900, bbox_inches='tight')
+    fig.savefig(outdir_paper + 'S4_transport_basins_scatter_other.pdf', dpi=900, bbox_inches='tight')
     plt.close()
 
-S4_basintransport_other()
+#S4_basintransport_other()
 
 
 def S5_polattransport_other():   
@@ -665,9 +707,8 @@ def S5_polattransport_other():
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer2_pos','SubSurf_y2000_m1_d5_simdays3650_layer4_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer10_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer13_pos','SubSurf_y2000_m1_d5_simdays3650_layer19_pos', 
-              'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos',
-              'Kukulka_y2000_m1_d5_simdays3650_layer0_pos']
-    folders = ['Layer2', 'Layer4' , 'Layer7', 'Layer10','Layer13','Layer19', 'Layer22', 'Layer23','KukMix']
+              'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos']
+    folders = ['Layer2', 'Layer4' , 'Layer7', 'Layer10','Layer13','Layer19', 'Layer22', 'Layer23']
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]        
     labels = ['a) z = ' + str(nemo_depth[2]) + ' m', 
     'b) z = ' + str(nemo_depth[4]) + ' m', 
@@ -676,8 +717,7 @@ def S5_polattransport_other():
     'e) z = ' + str(nemo_depth[13]) + ' m', 
     'f) z = ' + str(nemo_depth[19]) + ' m', 
     'g) z = ' + str(nemo_depth[22]) + ' m', 
-    'h) z = ' + str(nemo_depth[23]) + ' m', 
-    'i) Kukulka mixing'] #figure titles        
+    'h) z = ' + str(nemo_depth[23]) + ' m'] #figure titles        
     
     #for the figure
     fig = plt.figure(figsize = (14,18)) 
@@ -726,11 +766,67 @@ def S5_polattransport_other():
     cbar.set_ticklabels(region_names)
 
     #save figure
-    fig.savefig(outdir_supplementary + 'transport_poles_scatter_other.pdf', dpi=900, bbox_inches='tight')
+    fig.savefig(outdir_paper + 'S5_transport_poles_scatter_other.pdf', dpi=900, bbox_inches='tight')
     plt.close()
 
-S5_polattransport_other()
+#S5_polattransport_other()
 
+def S6_depth_distribution():
+    
+    folder = '/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/Sim3D/'
+    filename = 'Run13D_y2000_m1_d5_simdays3650_pos'
+    
+    pdata=ParticleData.from_nc_3d(folder, filename, tload=[0,121], Ngrids=12)
+    pdata.remove_nans()
+
+    f, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize = (14,6), sharey=True)    
+
+    #Figure Atlantic
+    basin_regions = [1,3]
+    region_label=pdata.set_region_labels(2., -1)
+        
+    #select the particles in the basins, and label the particles according to their final basin
+    selection = [k for k in range(len(region_label)) if region_label[k] in basin_regions]
+    lats=pdata.lats[selection,-1]
+    depths=pdata.depths[selection,-1]
+
+    ax1.invert_yaxis()    
+    hist = ax1.hist2d(lats, depths, bins=50, norm=colors.LogNorm(), vmin=1, vmax=10000, cmap='inferno')
+    ax1.set_xlabel('Latitude [deg]')
+    ax1.set_ylabel('Depth [m]')
+    ax1.set_title('a) Pacific')
+        
+    #Figure Pacific
+    basin_regions = [2,4]
+        
+    #select the particles in the basins, and label the particles according to their final basin
+    selection = [k for k in range(len(region_label)) if region_label[k] in basin_regions]
+    lats=pdata.lats[selection,-1]
+    depths=pdata.depths[selection,-1]
+   
+    hist = ax2.hist2d(lats, depths, bins=50, norm=colors.LogNorm(), vmin=1, vmax=10000, cmap='inferno')
+    ax2.set_xlabel('Latitude [deg]')
+    ax2.set_title('b) Atlantic')
+
+    f.subplots_adjust(bottom=0.15)
+    cbar_ax = f.add_axes([0.15, 0.01, 0.45, 0.05])
+    cbar=f.colorbar(hist[3], cax=cbar_ax, orientation='horizontal')
+    cbar.ax.tick_params(labelsize=10, width=0.05)
+    cbar.set_label('# particles per bin', size=12)
+
+    depths=pdata.depths[:,-1]
+    depths=depths[depths>=0]
+    ax3.hist(depths, bins=50, orientation="horizontal", normed=True, color='darkred');
+    ax3.invert_yaxis()          
+    ax3.set_title('c) Total vertical distribution')
+    ax3.xaxis.set_ticks([0, 0.001,0.002,0.003,0.004])
+    ax3.grid(True)
+    
+    f.savefig(outdir_paper + 'S6_vertical_distribution.pdf', dpi=900, bbox_inches='tight')
+
+#S6_depth_distribution()    
+    
+    
 
 """
 TABLES SUPPLEMENTARY
@@ -750,7 +846,8 @@ def T1_13_create_transport_tables():
               'z = ' + str(nemo_depth[23]) + ' m',
               'z = ' + str(nemo_depth[25]) + ' m',
               'Random Uniform',
-              'Kukulka mixing']
+              'Kukulka mixing', 
+              '3D Simulation']
               
     #Load n_{ij}. If it does not exist, first run create_transport_matrix in FIG5_RegionalTransport
     n_matrix = np.load(outdir_paper + 'n_matrix_solat_-60_na_lat_65.npy').tolist()    
@@ -767,7 +864,7 @@ def T1_13_create_transport_tables():
         f*=100 
         
         #write in latex format
-        with open('./supplementary_material/tables/F_' + models_all[i] + '.txt', "w") as output:
+        with open(outdir_paper + '/tables/F_' + models_all[i] + '.txt', "w") as output:
             output.write('\\caption{F-matrix [\%]: ' + labels[i] + '}' + '\n')
             output.write('\\centering' + '\n')
             output.write('\\begin{tabular}{| l | c | c | c | c | c | c | c |}' + '\n')
@@ -788,4 +885,4 @@ def T1_13_create_transport_tables():
                     else:
                         output.write(str(round(f[k][l],1)) + ' \\\\' + '\n')
 
-T1_13_create_transport_tables()
+#T1_13_create_transport_tables()

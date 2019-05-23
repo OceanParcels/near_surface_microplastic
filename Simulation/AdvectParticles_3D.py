@@ -20,7 +20,7 @@ from glob import glob
 
 datadir = '/projects/0/topios/hydrodynamic_data/NEMO-MEDUSA/ORCA0083-N006/' #Directory for nemo data
 outputdir = '/scratch-shared/wichmann/SubSurfaceOutput/' #Directory for output files
-griddir = '/home/wichmann/SubsurfaceTransport/ParticleGrid/Global02grid/' #Directory for initial particle distribution
+griddir = '/home/wichmann/SubsurfaceTransport/ParticleGrid/Global02_v2_grid/' #Directory for initial particle distribution
 
 def get_nemo():
     ufiles = sorted(glob(datadir+'means/ORCA0083-N06_200?????d05U.nc'))
@@ -46,11 +46,11 @@ def get_nemo():
     fieldset.compute_on_defer = compute
     return fieldset
 
-def DeleteParticle(particle, fieldset, time, dt):
+def DeleteParticle(particle, fieldset, time):
     """Kernel for deleting particles if they are out of bounds."""
     particle.delete()
 
-def periodicBC(particle, fieldset, time, dt):
+def periodicBC(particle, fieldset, time):
     """
     Kernel for periodic values in longitude
     """
@@ -67,9 +67,6 @@ def p_advect(ptype=JITParticle, outname='noname', pos=0, y=2001, m=1, d=1, simda
         - y, m, d: year, month an day of the simulation start
         - simdays: number of days to simulate
         - particledepth: for fixed-depth simulations. Index of nemo depth grid
-        - uniform_mixing: True for uniform mixing simulation
-        - kukulka_mixing: True for kukulka mixing simulation
-        - wrise: Rise velocity, needed for kukulka mixing simulation
     """
     
     print '-------------------------'
@@ -82,11 +79,12 @@ def p_advect(ptype=JITParticle, outname='noname', pos=0, y=2001, m=1, d=1, simda
     #Load initial particle positions (grids) from external files
     lons = np.load(griddir + 'Lons' + str(pos) + '.npy')
     lats = np.load(griddir + 'Lats' + str(pos) + '.npy')
+
     depths = [1.5] * len(lons)
     times = [datetime(y, m, d)]*len(lons)
     print 'Number of particles: ', len(lons)
     
-    fieldset = get_nemo_fieldset()
+    fieldset = get_nemo()
 
     outfile = outputdir + outname + '3D_y'+ str(y) + '_m' + str(m) + '_d' + str(d)  + '_simdays' + str(simdays) + '_pos' + str(pos)
 
@@ -100,7 +98,7 @@ def p_advect(ptype=JITParticle, outname='noname', pos=0, y=2001, m=1, d=1, simda
     
     #Trajectory computation
     pset.execute(kernels, runtime=timedelta(days=simdays), dt=timedelta(minutes=10), 
-                 output_file=pset.ParticleFile(name=outfile, outputdt=timedelta(days=15)),
+                 output_file=pset.ParticleFile(name=outfile, outputdt=timedelta(days=30)),
                  recovery={ErrorCode.ErrorOutOfBounds: DeleteParticle}, verbose_progress=False)
 
 if __name__=="__main__":

@@ -1,5 +1,5 @@
 """
-Influence of near-surface currents on the global dispersal of marine microplastic
+Potential influence of near-surface currents on the global dispersal of marine microplastic
 -------------------------------------------------------------------------
 David Wichmann, Philippe Delandmeter, Erik van Sebille
 
@@ -89,6 +89,7 @@ def regions(ddeg, so_lat=-60, na_lat=65):
             if (lo<SOmaxlon and lo>=SOminlon and la<SOmaxlat and la>=SOminlat):
                 region[j,i]=7
 
+
     region_names = ['North Pacific','North Atlantic','South Pacific','South Atlantic','Indian Ocean','Artic','Southern Ocean']
     region=region.T
     region=region.ravel()
@@ -100,7 +101,7 @@ class ParticleData(object):
     Class that containing 2D particle data and functions to analyse it
     """
 
-    def __init__(self, lons, lats, times):
+    def __init__(self, lons, lats, times, depths=None):
         """
         -params lons, lats, times, depths: arrays containing the data
         """
@@ -115,11 +116,10 @@ class ParticleData(object):
         self.lons=lons
         self.lats=lats
         self.times=times
-        
+        self.depths=depths
         
     def __del__(self):
         print "Particle Data deleted"
-        
         
     def remove_nans(self): #For removing Nans in problematic regions
         print 'Removing NaNs...'
@@ -129,10 +129,12 @@ class ParticleData(object):
         self.lons = self.lons[indices]
         self.lats = self.lats[indices]
         self.times = self.times[indices]
-
+        
+        if self.depths is not None:
+            self.depths = self.depths[indices]
+        
         print 'NaNs are removed'
         print '---------------------'
-        
         
     def get_distribution(self, t, ddeg):
         """
@@ -145,7 +147,6 @@ class ParticleData(object):
         lat_edges=np.linspace(minlat,maxlat,int((maxlat-minlat)/ddeg)+1)  
         d , _, _ = np.histogram2d(self.lats[:,t], self.lons[:,t], [lat_edges, lon_edges])
         return d
-
 
     @classmethod
     def from_nc(cls, pdir, fname, tload=None, Ngrids=40):
@@ -181,7 +182,45 @@ class ParticleData(object):
         times/=86400. #Convert to days
 
         return cls(lons=lons, lats=lats, times=times)
+    
 
+
+    @classmethod
+    def from_nc_3d(cls, pdir, fname, tload=None, Ngrids=40):
+        """
+        Load 2D data from netcdf particle output files. We assume that there are 
+        several output files, each for different initial distributions that have to be merged
+        :param pdir: directory of files
+        :param fname: file name in pdir
+        :param tload: array of times for which we load the data (indices, not actual times)
+        :Ngrids: number of different output files to be merged (40 in our case)
+        """
+
+        print 'Loading data from files: ', pdir + fname
+        
+        #Load data from first grid-array
+        i = 0
+        print 'Load grid no: ', i
+        pfile = pdir + fname + str(i)+'.nc'     
+        data = Dataset(pfile,'r')
+        
+        times=data.variables['time'][:,tload]
+        lons=data.variables['lon'][:,tload]
+        lats=data.variables['lat'][:,tload]
+        depths=data.variables['z'][:,tload]
+        
+        #Load data from other grid-arrays        
+        for i in range(1,Ngrids):
+            print 'Load grid no: ', i
+            pfile = pdir + fname + str(i)+'.nc'  
+            data = Dataset(pfile,'r')
+            times=np.vstack((times, data.variables['time'][:,tload]))
+            lons=np.vstack((lons, data.variables['lon'][:,tload]))
+            lats=np.vstack((lats, data.variables['lat'][:,tload]))
+            depths=np.vstack((depths, data.variables['z'][:,tload]))
+        times/=86400. #Convert to days
+
+        return cls(lons=lons, lats=lats, times=times, depths=depths)
     
     def set_region_labels(self, ddeg, t, so_lat=-60, na_lat=65):
         """
@@ -198,6 +237,7 @@ class ParticleData(object):
         return region_label
         
     
+
 class oceanvector(object):
     """
     Class for ocean vectors. Can be 1d or 2d (lon x lat)
@@ -231,3 +271,4 @@ class oceanvector(object):
         
         self.V1d = v1d
         self.V2d = v2d
+
