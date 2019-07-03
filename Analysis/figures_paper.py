@@ -83,17 +83,17 @@ def FIG1_surface_distribution():
 
 def FIG2_distributions_different_models():
     
-    subfolders = ['Layer7', 'Layer16', 'Layer19', 'KukMix', 'UniMix', 'Sim3D']
+    subfolders = ['Layer10', 'Layer16', 'Layer19', 'UniMix', 'KukMix', 'Sim3D']
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in subfolders]
-    labels = ['a) z = ' + str(nemo_depth[7]) + ' m', 
+    labels = ['a) z = ' + str(nemo_depth[10]) + ' m', 
     'b) z = ' + str(nemo_depth[16]) + ' m',
     'c) z = ' + str(nemo_depth[19]) + ' m',
-    'd) Kukulka mixing',
     'd) Uniform',
+    'e) Kukulka mixing',
     'f) 3D simulation'] #figure titles
-    filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer19_pos', 'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 
-              'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
+    filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer10_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
+              'SubSurf_y2000_m1_d5_simdays3650_layer19_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 
+              'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
     
     fig = plt.figure(figsize = (14,11)) 
     gs1 = gridspec.GridSpec(3, 2)
@@ -137,17 +137,17 @@ def FIG2_distributions_different_models():
 
 def FIG3_scatter_final_basin():
 
-    subfolders = ['Layer0', 'Layer16', 'Layer25', 'KukMix', 'UniMix', 'Sim3D']
+    subfolders = ['Layer0', 'Layer16', 'Layer25', 'UniMix', 'KukMix', 'Sim3D']
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in subfolders]
     labels = ['a) z = ' + str(nemo_depth[0]) + ' m', 
     'b) z = ' + str(nemo_depth[16]) + ' m', 
     'c) z = ' + str(nemo_depth[25]) + ' m', 
-    'd) Kukulka mixing',
-    'e) Uniform', 
+    'd) Uniform',
+    'e) Kukulka mixing', 
     'f) 3D simulation'] #figure titles    
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer0_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 
-              'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
+              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 
+              'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
 
     #for the figure
     fig = plt.figure(figsize = (14,11)) 
@@ -206,17 +206,17 @@ def FIG3_scatter_final_basin():
 
 def FIG4_scatter_final_poles():
 
-    subfolders = ['Layer0', 'Layer16', 'Layer25', 'KukMix', 'UniMix', 'Sim3D']
+    subfolders = ['Layer0', 'Layer16', 'Layer25', 'UniMix', 'KukMix', 'Sim3D']
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in subfolders]
     labels = ['a) z = ' + str(nemo_depth[0]) + ' m', 
     'b) z = ' + str(nemo_depth[16]) + ' m', 
     'c) z = ' + str(nemo_depth[25]) + ' m', 
-    'd) Kukulka mixing',
-    'e) Uniform', 
+    'd) Uniform',
+    'e) Kukulka mixing', 
     'f) 3D simulation'] #figure titles    
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer0_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer16_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 
-              'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
+              'SubSurf_y2000_m1_d5_simdays3650_layer25_pos', 'Uniform_y2000_m1_d5_simdays3650_layer0_pos', 
+              'Kukulka_y2000_m1_d5_simdays3650_layer0_pos', 'Run13D_y2000_m1_d5_simdays3650_pos']
 
     #for the figure
     fig = plt.figure(figsize = (14,11)) 
@@ -444,7 +444,7 @@ def FIG5_RegionalTransport():
         plt.tick_params(axis='both', which='major', labelsize=10)
         plt.yticks(np.arange(0,10,2))        
         xlabels = np.arange(0,140,20)
-        xlabels = np.append(xlabels, ['U','K', '3D'])
+        xlabels = np.append(xlabels, ['(ii)','(iii)', '(iv)'])
         plt.xticks(np.arange(0,200,20), xlabels)
         
         #F_SOSO
@@ -481,7 +481,10 @@ def FIG5_RegionalTransport():
         plt.tick_params(axis='both', which='major', labelsize=10)
         plt.yticks(np.arange(0,16,2))
         plt.xticks(np.arange(0,200,20), xlabels)
-        plt.xlabel('depth [m]', size=10)
+        plt.xlabel('(i) fixed depth [m]', size=10)
+        ax = plt.gca()
+        ax.xaxis.set_label_coords(0.4, -0.1) 
+
 
         #F_AA
         plt.subplot(gs1[3])
@@ -496,7 +499,10 @@ def FIG5_RegionalTransport():
         plt.tick_params(axis='both', which='major', labelsize=10)
         plt.yticks(np.arange(40,90,10))
         plt.xticks(np.arange(0,200,20), xlabels)
-        plt.xlabel('depth [m]', size=10)
+        plt.xlabel('(i) fixed depth [m]', size=10)
+        ax = plt.gca()
+        ax.xaxis.set_label_coords(0.4, -0.1) 
+
 
         plt.savefig(outdir_paper + 'F5_regional_transport_to_poles.pdf', dpi=900, bbox_inches='tight')
         
@@ -583,14 +589,14 @@ def S2_plot_regions():
 def S3_distributions_different_models():   
 
     filenames = ['SubSurf_y2000_m1_d5_simdays3650_layer2_pos','SubSurf_y2000_m1_d5_simdays3650_layer4_pos',
-              'SubSurf_y2000_m1_d5_simdays3650_layer10_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer13_pos',
+              'SubSurf_y2000_m1_d5_simdays3650_layer7_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer13_pos',
               'SubSurf_y2000_m1_d5_simdays3650_layer22_pos', 'SubSurf_y2000_m1_d5_simdays3650_layer23_pos', 
               'SubSurf_y2000_m1_d5_simdays3650_layer25_pos']
-    folders = ['Layer2', 'Layer4', 'Layer10','Layer13','Layer22', 'Layer23', 'Layer25']    
+    folders = ['Layer2', 'Layer4', 'Layer7','Layer13','Layer22', 'Layer23', 'Layer25']    
     folders = ['/Users/wichmann/Simulations/Proj1_SubSurface_Mixing/' + f for f in folders]           
     labels = ['a) z = ' + str(nemo_depth[2]) + ' m', 
     'b) z = ' + str(nemo_depth[4]) + ' m', 
-    'c) z = ' + str(nemo_depth[10]) + ' m', 
+    'c) z = ' + str(nemo_depth[7]) + ' m', 
     'd) z = ' + str(nemo_depth[13]) + ' m', 
     'e) z = ' + str(nemo_depth[22]) + ' m', 
     'f) z = ' + str(nemo_depth[23]) + ' m', 
