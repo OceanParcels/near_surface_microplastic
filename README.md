@@ -9,6 +9,9 @@ For loading a sub-set of depths, it was necessary to comment lines 173 and 174 o
 
 We used OceanParcels version 2.0 for the 3D simulation. See: Delandmeter, P. & van Sebille, E. The Parcels v2.0 Lagrangian framework: new field interpolation schemes. Geosci. Model Dev. Discuss. 1–24 (2019).
 
+# Particle Initial Coordinates
+See InitialCoordinates/CreateGrid.py for creating a uniform 2D initial grid of particles.
+
 # Simulation
 For all but 3D simulation: Use Simulations/AdvectParticles.py
 For 3D siulation: AdvectParticles_3D.py
